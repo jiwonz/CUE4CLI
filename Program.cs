@@ -13,12 +13,10 @@ class Program{
 					logOffOptimization = true;
 				}
 				for (int i = 1; i <= arguments.Length-1-1; i++){
-					Console.WriteLine(i);
 					input = arguments[i];
 					if(logOffOptimization==false) Console.Write("Getting File...");
 					CUE4Parse.FileProvider.Objects.GameFile? value;
 					provider.TryFindGameFile(input,out value);
-					Console.WriteLine(value.Name);
 					if(logOffOptimization==false) Console.Write("OK\n");
 					if(logOffOptimization==false) Console.Write("Writing File...");
 					await File.WriteAllBytesAsync(Path.Combine(arguments[^1], value.Name), await value!.ReadAsync());
