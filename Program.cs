@@ -2,24 +2,28 @@
 using CUE4Parse.FileProvider;
 using CUE4Parse.UE4.Versions;
 using CUE4Parse.UE4.Objects.Core.Misc;
-using System.Linq;
-using System.IO;
 
 class Program{
 	private static async Task RunCommand(DefaultFileProvider provider, string[] arguments){
+		string input;
 		switch(arguments[0]) {
 			case "ExtractFile":
-				string output = arguments[2];
-				if (output.StartsWith("\"") && output.EndsWith("\"")){
-					output = output.Substring(1, output.Length - 2);
+				bool logOffOptimization = false;
+				if (arguments.Length > 3){
+					logOffOptimization = true;
 				}
-				Console.Write("Getting File...");
-				CUE4Parse.FileProvider.Objects.GameFile? value;
-				provider.TryFindGameFile(arguments[1]!,out value);
-				Console.Write("OK\n");
-				Console.Write("Writing File...");
-				await File.WriteAllBytesAsync(output!, await value!.ReadAsync());
-				Console.Write("OK\n");
+				for (int i = 1; i <= arguments.Length-1-1; i++){
+					Console.WriteLine(i);
+					input = arguments[i];
+					if(logOffOptimization==false) Console.Write("Getting File...");
+					CUE4Parse.FileProvider.Objects.GameFile? value;
+					provider.TryFindGameFile(input,out value);
+					Console.WriteLine(value.Name);
+					if(logOffOptimization==false) Console.Write("OK\n");
+					if(logOffOptimization==false) Console.Write("Writing File...");
+					await File.WriteAllBytesAsync(Path.Combine(arguments[^1], value.Name), await value!.ReadAsync());
+					if(logOffOptimization==false) Console.Write("OK\n");
+				}
 				break;
 			case "List":
 				foreach (var path in provider.Files.Keys){
@@ -29,10 +33,7 @@ class Program{
 				}
 				break;
 			case "SaveList":
-				string input = arguments[2];
-				if (input.StartsWith("\"") && input.EndsWith("\"")){
-					input = input.Substring(1, input.Length - 2);
-				}
+				input = arguments[2];
 				Console.Write("Writing List Into "+input+"...");
 				using (StreamWriter writer = new StreamWriter(input)){
 					foreach (var path in provider.Files.Keys){
@@ -67,6 +68,12 @@ class Program{
 				Console.Write("> ");
 				string? command = Console.ReadLine();
 				string[] arguments = command!.Split(" ");
+				for (int i = 0; i < arguments.Length; i++){
+					string arg = arguments[i];
+					if (arg.StartsWith("\"") && arg.EndsWith("\"")){
+						arguments[i] = arg.Substring(1, arg.Length - 2);
+					}
+				}
 				switch(arguments[0]){
 					case "Quit":
 						run = false;
